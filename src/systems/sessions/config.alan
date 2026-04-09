@@ -1,0 +1,3 @@
+password-authentication: enabled
+
+allow-user-creation: enabled

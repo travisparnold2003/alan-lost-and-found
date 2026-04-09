@@ -1,0 +1,14 @@
+# Ignore Alan runtime files
+.alan/
+*/.alan/
+*~
+*.swp
+.DS_Store
+Thumbs.db
+
+# Ignore build artifacts
+deployments/
+*.log
+
+# Ignore VS Code settings
+.vscode/

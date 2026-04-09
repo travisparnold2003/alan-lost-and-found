@@ -4,7 +4,13 @@ users
 	    passwords: .'Passwords'
 	      password-value: .'Data'.'Password'
 	      password-status: .'Data'.'Active' ( active => 'Yes' | reset => 'No' )
-	      password-initializer: ( 'Data' = ( ) )
+	      password-initializer: (
+	        'Data' = (
+	          'User': text = "root"
+	          'Role': stategroup = 'Administrator' ( )
+	          'Staff Member': reference = <!""!> ( )
+	        )
+	      )
 
 interfaces
 

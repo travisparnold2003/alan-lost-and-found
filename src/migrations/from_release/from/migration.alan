@@ -1,0 +1,10 @@
+root = root as $ (
+	'Locations': collection = <! !> ( )
+	'Categories': collection = <! !> ( )
+	'Staff': collection = <! !> ( )
+	'Users': collection = <! !> ( )
+	'Passwords': collection = <! !> ( )
+	'Found Items': collection = <! !> ( )
+	'Loss Reports': collection = <! !> ( )
+	'Matches': collection = <! !> ( )
+)
