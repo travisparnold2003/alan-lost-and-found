@@ -5,4 +5,125 @@
 'Locations': collection ['Location ID'] {
 	'Location ID': text
 	'Name': text @identifying @description: 'Unique identifier for the location'
+	'Terminal': stategroup = (
+		'Terminal 1' { }
+		'Terminal 2' { }
+		'Terminal 3' { }
+		'Terminal 4' { }
+	)
+	'Zone': text @description: 'Area within the terminal (Central, Baggage Claim, Security, etc.)'
+	'Description': text @description: 'Detailed description of the location'
 }
+
+'Categories': collection ['Category ID'] {
+	'Category ID': text
+	'Name': text @identifying @description: 'Category name for found/lost items'
+	'Retention Days': number 'days' @min: 1 @description: 'Days to retain items before disposal'
+	'Priority': stategroup = (
+		'Low' { }
+		'Standard' { }
+		'High' { }
+		'Critical' { }
+	) @description: 'Priority level for handling items'
+}
+
+// Phase 1: Users & Authentication
+'Users': collection ['User ID'] {
+	'User ID': text
+	'Username': text @identifying @description: 'Unique username for login'
+	'Full Name': text @description: 'Full name of the user'
+	'Email': text @validate: '[^@\\s]+@[^@\\s]+\\.[^@\\s]+' @description: 'Email for notifications'
+	'Role': stategroup = (
+		'Administrator' { @description: 'Full system access' }
+		'Supervisor' { @description: 'Can confirm/reject matches and manage staff' }
+		'Desk Agent' { @description: 'Can log items and propose matches' }
+		'Viewer' { @description: 'Read-only access' }
+	) @description: 'User role determining permissions'
+	'Active': boolean @default: true @description: 'Whether account is active'
+}
+
+'Passwords': collection <- 'Users' {
+	'Password': text @description: 'Hashed password (never plain text)'
+	'Last Reset': number 'date' @description: 'Date of last password reset'
+	'Failed Attempts': number @default: 0 @description: 'Consecutive failed login attempts'
+	'Locked Until': number 'date' @description: 'Account locked until date (if applicable)'
+}
+
+// Phase 2: Core Functionality
+'Found Items': collection ['Item ID'] {
+	'Item ID': text
+	'Category': text -> ^ .'Categories'* .'Category ID' @description: 'Category of found item'
+	'Description': text @identifying @description: 'Detailed description of found item'
+	'Brand': text @description: 'Brand or manufacturer (if applicable)'
+	'Model': text @description: 'Model number or name (if applicable)'
+	'Color': text @description: 'Primary color of item'
+	'Serial Number': text @description: 'Serial number or unique identifier'
+	'Location Found': text -> ^ .'Locations'* .'Location ID' @identifying @description: 'Where item was found'
+	'Date Found': number 'date' @default: now @description: 'Date when item was found'
+	'Time Found': number 'time' @default: now @description: 'Time when item was found'
+	'Finder Name': text @description: 'Name of person who found item (optional)'
+	'Finder Contact': text @validate: '[^@\\s]+@[^@\\s]+\\.[^@\\s]+' @description: 'Contact for finder (optional)'
+	'Condition': stategroup = (
+		'New' { @description: 'Item appears new, unused' }
+		'Like New' { @description: 'Minor signs of use' }
+		'Good' { @description: 'Shows normal wear and tear' }
+		'Fair' { @description: 'Visible wear but fully functional' }
+		'Poor' { @description: 'Significant wear, may have minor defects' }
+		'Damaged' { @description: 'Not functioning properly or significantly damaged' }
+	) @description: 'Physical condition of found item'
+	'Image': file @description: 'Photo of found item (optional)'
+	'Status': stategroup = (
+		'Logged' { @description: 'Recently logged, waiting for processing' }
+		'Stored' { @description: 'Item is in storage facility' }
+		'Matched' { @description: 'Item matched to loss report' }
+		'Returned' { @description: 'Item returned to owner' }
+		'Disposed' { @description: 'Item disposed after retention period' }
+		'Archived' { @description: 'Records archived for historical purposes' }
+	) @default: 'Logged' @description: 'Current status of found item'
+	'Notes': text @description: 'Additional notes about item'
+	'Logged By': text -> ^ .'Users'* .'User ID' @description: 'User who logged this found item'
+	'Logged At': number 'dateTime' @default: now @description: 'Timestamp when item was logged'
+}
+
+'Loss Reports': collection ['Report ID'] {
+	'Report ID': text
+	'Category': text -> ^ .'Categories'* .'Category ID' @description: 'Category of lost item'
+	'Description': text @identifying @description: 'Detailed description of lost item'
+	'Brand': text @description: 'Brand or manufacturer (if applicable)'
+	'Model': text @description: 'Model number or name (if applicable)'
+	'Color': text @description: 'Primary color of item'
+	'Serial Number': text @description: 'Serial number or unique identifier'
+	'Location Lost': text -> ^ .'Locations'* .'Location ID' @identifying @description: 'Where item was lost'
+	'Date Lost': number 'date' @description: 'Date when item was lost'
+	'Time Lost': number 'time' @description: 'Time when item was lost'
+	'Owner Name': text @description: 'Name of person who lost item'
+	'Owner Contact': text @validate: '[^@\\s]+@[^@\\s]+\\.[^@\\s]+' @description: 'Contact for owner'
+	'Date Reported': number 'date' @default: now @description: 'Date when loss was reported'
+	'Time Reported': number 'time' @default: now @description: 'Time when loss was reported'
+	'Status': stategroup = (
+		'Filed' { @description: 'Recently filed, waiting for processing' }
+		'Matched' { @description: 'Report matched to found item' }
+		'Returned' { @description: 'Item returned to owner' }
+		'Closed' { @description: 'Case closed (item not found after retention)' }
+		'Archived' { @description: 'Records archived for historical purposes' }
+	) @default: 'Filed' @description: 'Current status of loss report'
+	'Notes': text @description: 'Additional notes about loss'
+	'Filed By': text -> ^ .'Users'* .'User ID' @description: 'User who filed report (null for anonymous)'
+	'Filed At': number 'dateTime' @default: now @description: 'Timestamp when report was filed'
+}
+
+// Phase 3: Staff & Matching System
+'Staff': collection <- 'Users' {
+	'Employee ID': text @identifying @description: 'Unique employee identifier'
+	'Department': text @description: 'Department or assignment'
+	'Shift Start': number 'time' @description: 'Scheduled shift start time'
+	'Shift End': number 'time' @description: 'Scheduled shift end time'
+	'Badge Number': text @description: 'Physical badge or ID number'
+	'Hire Date': number 'date' @description: 'Date when employee was hired'
+	'Training Completed': boolean @default: false @description: 'Whether required training completed'
+	'Items Logged Count': number @default: 0 @description: 'Total items logged by staff member'
+	'Matches Proposed Count': number @default: 0 @description: 'Total matches proposed by staff member'
+}
+
+// Phase 4: Dashboard & Analytics would use derived values in a complete implementation
+// Interfaces and wiring are defined in separate files
