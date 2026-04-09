@@ -45,4 +45,7 @@ root = root as $ (
 	'Staff': collection = <! !> ( )
 	'Users': collection = <! !> ( )
 	'Passwords': collection = <! !> ( )
+	'Found Items': collection = <! !> ( )
+	'Loss Reports': collection = <! !> ( )
+	'Matches': collection = <! !> ( )
 )

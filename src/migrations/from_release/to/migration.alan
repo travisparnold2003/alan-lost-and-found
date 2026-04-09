@@ -1,6 +1,47 @@
 root = root as $ (
-	'Locations': collection = <! !> ( )
-	'Categories': collection = <! !> ( )
+	'Locations': collection = <! !> (
+		= (
+			'Location ID': text = "LOC001"
+			'Name': text = "Main Entrance Hall"
+			'Terminal': stategroup = 'Terminal 2' ( )
+			'Zone': text = "Central"
+			'Description': text = "Main passenger entrance area with information desks"
+		)
+		= (
+			'Location ID': text = "LOC002"
+			'Name': text = "Baggage Claim Area 1"
+			'Terminal': stategroup = 'Terminal 2' ( )
+			'Zone': text = "Baggage Claim"
+			'Description': text = "First baggage claim carousel for domestic flights"
+		)
+		= (
+			'Location ID': text = "LOC003"
+			'Name': text = "Security Checkpoint North"
+			'Terminal': stategroup = 'Terminal 3' ( )
+			'Zone': text = "Security"
+			'Description': text = "North security screening area for Terminal 3"
+		)
+	)
+	'Categories': collection = <! !> (
+		= (
+			'Category ID': text = "CAT001"
+			'Name': text = "Electronics"
+			'Retention Days': number 'days' = 30
+			'Priority': stategroup = 'High' ( )
+		)
+		= (
+			'Category ID': text = "CAT002"
+			'Name': text = "Clothing & Accessories"
+			'Retention Days': number 'days' = 60
+			'Priority': stategroup = 'Standard' ( )
+		)
+		= (
+			'Category ID': text = "CAT003"
+			'Name': text = "Documents & ID"
+			'Retention Days': number 'days' = 365
+			'Priority': stategroup = 'Critical' ( )
+		)
+	)
 	'Staff': collection = <! !> ( )
 	'Users': collection = <! !> ( )
 	'Passwords': collection = <! !> ( )
