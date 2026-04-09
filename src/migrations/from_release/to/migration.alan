@@ -43,8 +43,24 @@ root = root as $ (
 		)
 	)
 	'Staff': collection = <! !> ( )
-	'Users': collection = <! !> ( )
-	'Passwords': collection = <! !> ( )
+	'Users': collection = <! !> (
+		= (
+			'User ID': text = "root"
+			'Username': text = "root"
+			'Full Name': text = "System Administrator"
+			'Email': text = "admin@lostandfound.system"
+			'Role': stategroup = 'Administrator' ( )
+			'Active': boolean = true
+		)
+	)
+	'Passwords': collection = <! !> (
+		= (
+			'Password': text = "welcome"
+			'Last Reset': number 'date' = 2026-04-09
+			'Failed Attempts': number = 0
+			'Locked Until': number 'date' = 2026-04-09
+		)
+	)
 	'Found Items': collection = <! !> ( )
 	'Loss Reports': collection = <! !> ( )
 	'Matches': collection = <! !> ( )
