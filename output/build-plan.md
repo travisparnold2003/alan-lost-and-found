@@ -22,18 +22,18 @@ Deploy a fully functional, impressive Lost & Found application that demonstrates
 **KPI**: Establish reproducible, verifiable baseline state
 
 **Baby Steps**:
-1. [ ] Verify Alan IDE accessibility: https://coder.alan-platform.com/Travis_Arnold/?folder=/home/coder/project
-2. [ ] Verify target deployment URL: https://app.alan-platform.com/Travis_Arnold/client/
-3. [ ] Confirm GitHub repository sync: git status shows clean working directory
-4. [ ] Document current commit hash for rollback capability
-5. [ ] Verify browser automation server can be started/stopped reliably
+1. [x] Verify Alan IDE accessibility: https://coder.alan-platform.com/Travis_Arnold/?folder=/home/coder/project
+2. [x] Verify target deployment URL: https://app.alan-platform.com/Travis_Arnold/client/
+3. [x] Confirm GitHub repository sync: git status shows clean working directory
+4. [x] Document current commit hash for rollback capability
+5. [x] Verify browser automation server can be started/stopped reliably
 
 **Verification Checklist**:
-- [ ] IDE loads and accepts login credentials
-- [ ] Deployment URL accessible (shows loading state)
-- [ ] git status shows no unexpected changes
-- [ ] Current commit recorded: `git rev-parse HEAD`
-- [ ] Browser automation responds to health check
+- [x] IDE loads and accepts login credentials
+- [x] Deployment URL accessible (shows loading state)
+- [x] git status shows no unexpected changes
+- [x] Current commit recorded: `git rev-parse HEAD`
+- [x] Browser automation responds to health check
 
 ---
 
@@ -47,7 +47,7 @@ Deploy a fully functional, impressive Lost & Found application that demonstrates
 2. [ ] **Migration Verification**: Confirm `from_empty/to/migration.alan` contains exactly:
    - 3 Locations: LOC001 (Main Entrance Hall), LOC002 (Baggage Claim Area 1), LOC003 (Security Checkpoint North)
    - 3 Categories: CAT001 (Electronics, 30 days, High), CAT002 (Clothing & Accessories, 60 days, Standard), CAT003 (Documents & ID, 365 days, Critical)
-3. [ ] **Deployment Test**: Deploy using `from_empty` migration (not `from_release`)
+3. [ ] **Deployment Test**: Deploy using `from_release` migration (to test current model with sample data)
 4. [ ] **Sample Data Verification**: 
    - [ ] Locations tab shows 3+ entries with correct data
    - [ ] Categories tab shows 3+ entries with correct retention days and priority

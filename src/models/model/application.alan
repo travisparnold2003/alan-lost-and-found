@@ -127,3 +127,27 @@
 
 // Phase 4: Dashboard & Analytics would use derived values in a complete implementation
 // Interfaces and wiring are defined in separate files
+
+// Authentication wiring
+users
+    anonymous
+    dynamic: .'Users'
+        passwords: .'Passwords'
+            password-value: .'Data'.'Password'
+            password-status: .'Data'.'Active' (
+                | active => 'Yes' (
+                )
+                | reset => 'No' (
+                )
+            )
+        password-initializer: (
+            'Data' = (
+                'Username': text = "root"
+                'Full Name': text = "System Administrator"
+                'Email': text = "admin@lostandfound.system"
+                'Role': stategroup = 'Administrator' (
+                )
+                'Active': boolean = true
+                'Password': text = "welcome"
+            )
+        )
