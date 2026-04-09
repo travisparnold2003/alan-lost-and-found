@@ -239,8 +239,8 @@ users
 - [x] Phase 1  — Wrong schema, empty data (superseded by 1b)
 - [x] Phase 1b — Foundation rebuild 
 - [x] Phase 2  — Staff + Users + Auth
-- [ ] Phase 3  — Found Items + Loss Reports
-- [ ] Phase 4  — Matches
+- [x] Phase 3  — Found Items + Loss Reports
+- [x] Phase 4  — Matches
 - [ ] Phase 5  — Dashboard + Polish
 - [ ] Phase 6  — Connector
 - [ ] Phase 7  — Seed Data
