@@ -4,7 +4,5 @@
 // Phase 0: Foundation - Lookup Tables
 'Locations': collection ['Location ID'] {
 	'Location ID': text
-	'Name':        text @identifying @description: 'Unique identifier for the location'
+	'Name': text @identifying @description: 'Unique identifier for the location'
 }
-
-// We'll add more fields and collections one at a time
