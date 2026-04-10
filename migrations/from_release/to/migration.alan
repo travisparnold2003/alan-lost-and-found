@@ -1,0 +1,11 @@
+// Phase 0 → Phase 1 migration: adds Terminal, Zone, Description to Locations.
+// Existing records get Terminal defaulted to 'Terminal 1', Zone and Description defaulted to "".
+root = root as $ (
+	'Locations': collection = map $ .'Locations'* as $'l' (
+		'Location ID': text = $'l' .'Location ID'
+		'Name': text = $'l' .'Name'
+		'Terminal': stategroup = 'Terminal 1' ( )
+		'Zone': text = ""
+		'Description': text = ""
+	)
+)

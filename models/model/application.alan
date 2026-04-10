@@ -20,6 +20,14 @@ root {
 	'Locations': collection ['Location ID'] {
 		'Location ID': text
 		'Name': text @identifying
+		'Terminal': stategroup (
+			'Terminal 1' { }
+			'Terminal 2' { }
+			'Terminal 3' { }
+			'Terminal 4' { }
+		)
+		'Zone': text
+		'Description': text
 	}
 }
 

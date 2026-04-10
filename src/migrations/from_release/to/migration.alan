@@ -1,9 +1,0 @@
-// Phase 0 → Phase 0 identity migration (no model changes yet).
-// When you add fields in Phase 1, update ONLY this file to map old fields to new fields.
-// Pattern: add new fields with default values. Never remove from the map $ block.
-root = root as $ (
-	'Locations': collection = map $ .'Locations'* as $'l' (
-		'Location ID': text = $'l' .'Location ID'
-		'Name': text = $'l' .'Name'
-	)
-)
