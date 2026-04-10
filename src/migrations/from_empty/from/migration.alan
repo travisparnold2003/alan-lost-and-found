@@ -1,7 +1,2 @@
 root = root as $ (
-	'Locations': collection = <! !> ( )
-	'Categories': collection = <! !> ( )
-	'Staff': collection = <! !> ( )
-	'Users': collection = <! !> ( )
-	'Passwords': collection = <! !> ( )
 )

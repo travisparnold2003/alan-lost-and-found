@@ -54,25 +54,32 @@ alan-project/
 
 ## Current State (April 2026)
 
-**Phase 1 is deployed.** App is live at `app.alan-platform.com/Travis_Arnold/client/`.
+**FRESH START — Phase 0.** Previous agent left broken code. Application has been reset to minimal working state.
 
-**Collections are EMPTY** — all reference data (Airlines, Terminals, Locations, Item Categories) needs to be entered manually via the UI. This is intentional for now; bulk seed data entry is Phase 7.
+**What's deployed (or will be on next deploy):** A minimal app with just a `Locations` collection. Application builds correctly. Ready to deploy Phase 0.
 
-**Confirmed finding:** The `= ( ... )` literal entry syntax in `from_empty/migration.alan` does NOT actually insert rows into the deployed app. It builds without error but data stays empty. Do not waste time trying to fix the from_empty seeding — it doesn't work this way. Seed data will be entered manually in Phase 7.
+**What was wrong with the previous code:**
+- `application.alan` was missing `interfaces`, `root {}` wrapper, `numerical-types`
+- `users` block was at the bottom of the file (must be at top)
+- Used `boolean` type (doesn't exist in Alan — use stategroup Yes/No)
+- Used wrong reference syntax `.'Collection'* .'Key'` instead of `.'Collection'[]`
+- Used wrong settings file format
 
-**Next step: Phase 2 — Users & Auth**
+**Use BUILD_PLAN_V2.md** — not BUILD_PLAN.md. V2 is the authoritative plan.
+
+**Next step: Phase 0 — Deploy and verify the minimal app works**
 
 ---
 
 ## How to Start a Session
 
 1. Read this CONTEXT.md
-2. Read `_ref/workflow.md` — CRITICAL for how the Chrome automation works (especially the Start-of-Session browser health check)
-3. Read `_ref/alan-skill-readme.md` — platform overview
-4. Read `src/models/model/application.alan` — current data model
-5. Check `output/build-plan.md` for next phase
-6. Follow the browser server start-of-session procedure in `_ref/workflow.md` BEFORE anything else
-7. Build
+2. Read `BUILD_PLAN_V2.md` — this is the authoritative step-by-step plan (replaces old BUILD_PLAN.md)
+3. Read `_ref/workflow.md` — CRITICAL for Chrome automation and deploy loop
+4. Read `_ref/application-language.md` — Alan syntax reference
+5. Read `src/models/model/application.alan` — current data model
+6. Run browser health check (Step C in BUILD_PLAN_V2.md) BEFORE anything else
+7. Build one phase at a time — never skip ahead
 
 ---
 
@@ -84,22 +91,50 @@ Full details in `_ref/workflow.md`.
 
 ---
 
-## Critical Rules (hardest-won lessons from session 1)
+## Critical Rules (hard-won — never break these)
 
-1. **ALL collections in migration.alan require `<! !>` before `( )`** — even empty ones. `collection = ( )` is WRONG. `collection = <! !> ( )` is correct. This applies to BOTH from_empty AND from_release migrations.
+1. **application.alan structure is sacred.** This order never changes:
+   ```
+   users
+   interfaces
+   root { ... all collections and groups go here ... }
+   numerical-types
+   ```
 
-2. **from_release/from/application.alan** must match what's currently deployed. If you add a new collection to application.alan, you MUST use "Alan: Generate Migration" to update this file — or manually update it to match the PREVIOUS deployed model (not the new one).
+2. **Reference syntax:** `text -> ^ .'CollectionName'[]` — NOT `.'Collection'* .'Key'`
 
-3. **The deploy uses the git version** — always commit and push before deploying. Local changes that aren't pushed will be ignored.
+3. **No boolean type.** Use `stategroup ( 'Yes' { } 'No' { } )` instead.
 
-4. **"empty" vs "migrate" in deploy dialog:**
-   - First ever deploy: choose "empty" (uses from_empty migration, seeds data)
-   - All subsequent deploys: choose "migrate" (uses from_release migration, preserves data)
-   - Using "empty" after data exists WIPES ALL DATA
+4. **Empty migration collection:** `<! !> none` — NOT `<! !> ( )`
+   Seeded collection entry: `<! !> = ( 'Field': text = "value" )`
 
-5. **Alan Build must show `" 0  0"` in status bar** before deploying. Deploy with errors will fail silently.
+5. **from_release/from/** must match what's CURRENTLY deployed (snapshot of previous state).
+   from_release/to/ maps old → new with defaults for new fields.
 
-6. **Do NOT use screenshots for every step** — use `getText` and `eval` for text-based feedback. Screenshots are expensive tokens. Only screenshot when there's a visual error to debug.
+6. **First deploy: "empty". All subsequent: "migrate".** "empty" after data exists WIPES ALL DATA.
+
+7. **Build must show `" 0  0"` before deploying.** Never deploy with errors.
+
+8. **settings.alan format** (match exactly):
+   ```
+   application creator: "Travis Arnold"
+   application name: "Schiphol Lost & Found"
+   anonymous login: enabled
+   csv actions: enabled
+   report limit: 10000
+   announcement: "" [ ]
+   language: "English"
+   engine language: english
+   generator: 'default'
+   ```
+
+9. **sessions/config.alan format** (match exactly):
+   ```
+   password-authentication: disabled
+   user-creation: disabled
+   user-linking: disabled
+   ```
+   (Change password-authentication to enabled when adding user auth in Phase 3)
 
 ---
 
@@ -136,4 +171,4 @@ If `_ref/` doesn't cover something, go online in this order:
 
 ---
 
-*Last updated: 2026-04-08 (Session 2 — Phase 1 deployed, seed data finding)*
+*Last updated: 2026-04-10 — full reset, fresh start from Phase 0, all broken code removed*

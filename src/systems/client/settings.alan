@@ -1,3 +1,9 @@
+application creator: "Travis Arnold"
+application name: "Schiphol Lost & Found"
 anonymous login: enabled
-
-name: "Lost & Found System"
+csv actions: enabled
+report limit: 10000
+announcement: "" [ ]
+language: "English"
+engine language: english
+generator: 'default'

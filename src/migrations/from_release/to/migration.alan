@@ -1,67 +1,9 @@
+// Phase 0 → Phase 0 identity migration (no model changes yet).
+// When you add fields in Phase 1, update ONLY this file to map old fields to new fields.
+// Pattern: add new fields with default values. Never remove from the map $ block.
 root = root as $ (
-	'Locations': collection = <! !> (
-		= (
-			'Location ID': text = "LOC001"
-			'Name': text = "Main Entrance Hall"
-			'Terminal': stategroup = 'Terminal 2' ( )
-			'Zone': text = "Central"
-			'Description': text = "Main passenger entrance area with information desks"
-		)
-		= (
-			'Location ID': text = "LOC002"
-			'Name': text = "Baggage Claim Area 1"
-			'Terminal': stategroup = 'Terminal 2' ( )
-			'Zone': text = "Baggage Claim"
-			'Description': text = "First baggage claim carousel for domestic flights"
-		)
-		= (
-			'Location ID': text = "LOC003"
-			'Name': text = "Security Checkpoint North"
-			'Terminal': stategroup = 'Terminal 3' ( )
-			'Zone': text = "Security"
-			'Description': text = "North security screening area for Terminal 3"
-		)
+	'Locations': collection = map $ .'Locations'* as $'l' (
+		'Location ID': text = $'l' .'Location ID'
+		'Name': text = $'l' .'Name'
 	)
-	'Categories': collection = <! !> (
-		= (
-			'Category ID': text = "CAT001"
-			'Name': text = "Electronics"
-			'Retention Days': number 'days' = 30
-			'Priority': stategroup = 'High' ( )
-		)
-		= (
-			'Category ID': text = "CAT002"
-			'Name': text = "Clothing & Accessories"
-			'Retention Days': number 'days' = 60
-			'Priority': stategroup = 'Standard' ( )
-		)
-		= (
-			'Category ID': text = "CAT003"
-			'Name': text = "Documents & ID"
-			'Retention Days': number 'days' = 365
-			'Priority': stategroup = 'Critical' ( )
-		)
-	)
-	'Staff': collection = <! !> ( )
-	'Users': collection = <! !> (
-		= (
-			'User ID': text = "root"
-			'Username': text = "root"
-			'Full Name': text = "System Administrator"
-			'Email': text = "admin@lostandfound.system"
-			'Role': stategroup = 'Administrator' ( )
-			'Active': boolean = true
-		)
-	)
-	'Passwords': collection = <! !> (
-		= (
-			'Password': text = "welcome"
-			'Last Reset': number 'date' = 2026-04-09
-			'Failed Attempts': number = 0
-			'Locked Until': number 'date' = 2026-04-09
-		)
-	)
-	'Found Items': collection = <! !> ( )
-	'Loss Reports': collection = <! !> ( )
-	'Matches': collection = <! !> ( )
 )

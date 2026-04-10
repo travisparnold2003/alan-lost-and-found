@@ -1,10 +1,6 @@
+// This represents the Phase 0 deployed model (after first empty deploy).
+// When you add fields in Phase 1, leave this file unchanged — it's the "from" snapshot.
+// Only update this file if you fully wipe and re-deploy from empty.
 root = root as $ (
 	'Locations': collection = <! !> ( )
-	'Categories': collection = <! !> ( )
-	'Staff': collection = <! !> ( )
-	'Users': collection = <! !> ( )
-	'Passwords': collection = <! !> ( )
-	'Found Items': collection = <! !> ( )
-	'Loss Reports': collection = <! !> ( )
-	'Matches': collection = <! !> ( )
 )
