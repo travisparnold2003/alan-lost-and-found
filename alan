@@ -1,18 +1,53 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+root_dir="$(cd "$(dirname "$0")" && pwd)"
+
+resolve_tool() {
+  local relative_path="$1"
+
+  if [[ -x "$root_dir/.alan/$relative_path" ]]; then
+    echo "$root_dir/.alan/$relative_path"
+    return 0
+  fi
+
+  if [[ -x "$root_dir/src/.alan/$relative_path" ]]; then
+    echo "$root_dir/src/.alan/$relative_path"
+    return 0
+  fi
+
+  if [[ -x "$root_dir/src/.alan/$relative_path.exe" ]]; then
+    echo "$root_dir/src/.alan/$relative_path.exe"
+    return 0
+  fi
+
+  return 1
+}
+
 cmd="${1:-}"
 shift || true
 
 case "$cmd" in
   fetch)
-    exec "$(dirname "$0")/src/.alan/alan-tools/fetch.exe" "$@"
+    tool="$(resolve_tool "alan-tools/fetch")" || {
+      echo "Could not find a runnable fetch tool in .alan or src/.alan" >&2
+      exit 1
+    }
+    exec "$tool" "$@"
     ;;
   build)
-    exec "$(dirname "$0")/src/.alan/devenv/platform/project-build-environment/tools/build-system.exe" "$@"
+    tool="$(resolve_tool "devenv/platform/project-build-environment/tools/build-system")" || {
+      echo "Could not find a runnable build tool in .alan or src/.alan" >&2
+      exit 1
+    }
+    exec "$tool" "$@"
     ;;
   deploy)
-    exec "$(dirname "$0")/src/.alan/devenv/platform/project-build-environment/tools/deploy-system.exe" "$@"
+    tool="$(resolve_tool "devenv/platform/project-build-environment/tools/deploy-system")" || {
+      echo "Could not find a runnable deploy tool in .alan or src/.alan" >&2
+      exit 1
+    }
+    exec "$tool" "$@"
     ;;
   *)
     echo "Usage: alan {fetch|build|deploy} [args...]" >&2
