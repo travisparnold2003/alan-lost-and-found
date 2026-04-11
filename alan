@@ -33,7 +33,7 @@ case "$cmd" in
       echo "Could not find a runnable fetch tool in .alan or src/.alan" >&2
       exit 1
     }
-    exec "$tool" "$@"
+    exec "$tool" --versions "$root_dir/versions.json" --environment default "$@"
     ;;
   build)
     tool="$(resolve_tool "devenv/platform/project-build-environment/tools/build-system")" || {
