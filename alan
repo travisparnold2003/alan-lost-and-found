@@ -33,11 +33,38 @@ case "$cmd" in
       echo "Could not find a runnable fetch tool in .alan or src/.alan" >&2
       exit 1
     }
-    exec "$tool" --versions "$root_dir/versions.json" default "$@"
+    if "$tool" --versions "$root_dir/versions.json" default "$@"; then
+      exit 0
+    fi
+
+    # Keep deploy.sh usable when fetch endpoint is flaky but tools already exist.
+    if resolve_tool "devenv/platform/project-build-environment/tools/build-system" >/dev/null; then
+      echo "Fetch failed, but existing .alan toolchain is present. Continuing with cached tools." >&2
+      exit 0
+    fi
+
+    exit 1
     ;;
   build)
     tool="$(resolve_tool "devenv/platform/project-build-environment/tools/build-system")" || {
       echo "Could not find a runnable build tool in .alan or src/.alan" >&2
+      exit 1
+    }
+    if [[ $# -eq 0 ]]; then
+      exec "$tool" "$root_dir/dist/project.pkg"
+    fi
+    exec "$tool" "$@"
+    ;;
+  package)
+    tool="$(resolve_tool "devenv/platform/project-build-environment/tools/deploy-system")" || {
+      echo "Could not find a runnable package tool in .alan or src/.alan" >&2
+      exit 1
+    }
+    exec "$tool" "$@"
+    ;;
+  connect)
+    tool="$(resolve_tool "alan-tools/application-client")" || {
+      echo "Could not find a runnable application client in .alan or src/.alan" >&2
       exit 1
     }
     exec "$tool" "$@"
@@ -50,7 +77,7 @@ case "$cmd" in
     exec "$tool" "$@"
     ;;
   *)
-    echo "Usage: alan {fetch|build|deploy} [args...]" >&2
+    echo "Usage: alan {fetch|build|package|connect|deploy} [args...]" >&2
     exit 1
     ;;
 esac
