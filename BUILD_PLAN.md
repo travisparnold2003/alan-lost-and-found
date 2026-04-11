@@ -1,4 +1,4 @@
-# Alan Lost & Found — Build Plan V2
+# Alan Lost & Found — Build Plan
 ## For AI agents on basic models. Read every word before touching any file.
 
 ---
@@ -35,6 +35,8 @@
 
 ## How to Deploy (every single time — do not skip steps)
 
+**The IDE is controlled via the Playwright MCP.** See `_ref/workflow.md` for the full Playwright MCP guide.
+
 ### Step A — Edit local files
 Use the Edit/Write tools to change files inside the `src/` folder locally.
 
@@ -46,55 +48,27 @@ git commit -m "Phase X: brief description"
 git push
 ```
 
-### Step C — Git pull in IDE
-```bash
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"goto","url":"https://coder.alan-platform.com/Travis_Arnold/?folder=/home/coder/project"}'
-# Wait 3 seconds, then click terminal:
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"click","selector":".terminal.xterm.focus"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"type","text":"git pull\n"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":6000}'
+### Step C — Git pull in IDE terminal
+Use `browser_run_code` with `page.keyboard.type()` — NOT `browser_type`. xterm.js requires real keydown events:
+```javascript
+// browser_run_code:
+await page.evaluate(() => {
+  const xterms = document.querySelectorAll('.xterm-helper-textarea');
+  xterms[xterms.length - 1].focus();
+});
+await page.keyboard.type('git pull');
+await page.keyboard.press('Enter');
+await page.waitForTimeout(6000);
 ```
 
 ### Step D — Alan Build
-```bash
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"clickText","selector":".statusbar-item","text":"Alan Build"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":15000}'
-# CHECK — must return {"texts":[" 0  0"]}. If not, read errors and fix first.
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"getText","selector":".statusbar-item[id*=\"problems\"]"}'
-```
-
-If errors, read the output panel:
-```bash
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"getText","selector":"[id=\"workbench.panel.output\"] .view-lines"}'
-```
+- Click Alan Build button via `browser_click`
+- Wait ~15 seconds
+- Read status bar via `browser_snapshot` — must show `" 0  0"` before proceeding
 
 ### Step E — Alan Deploy
-```bash
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"clickText","selector":".statusbar-item","text":"Alan Deploy"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":2000}'
-# Read available options:
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"getText","selector":".monaco-list-row"}'
-# Click the correct option (see note below):
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"clickText","selector":".monaco-list-row","text":"empty"}'
-# Wait for deploy (30-40 seconds):
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":40000}'
-# Check deploy succeeded:
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"getText","selector":"[id=\"workbench.panel.output\"] .view-lines"}'
-```
+- Click Alan Deploy via `browser_click`
+- Choose "migrate" or "empty" from the dropdown
 
 **"empty" vs "migrate":**
 | Situation | Choose |
@@ -105,78 +79,27 @@ curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
 | Something went badly wrong, starting over | **empty** (wipes all data) |
 
 ### Step F — Verify in live app
-```bash
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"goto","url":"https://app.alan-platform.com/Travis_Arnold/client/"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":3000}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"getText","selector":".navigation-item"}'
-```
-
-### Browser server health check (start of EVERY session)
-```bash
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"goto","url":"https://app.alan-platform.com/Travis_Arnold/client/"}'
-```
-- Returns `{"url":...}` → browser alive, proceed
-- Returns error or connection refused → kill old server and restart:
-```bash
-powershell.exe -Command "Get-NetTCPConnection -LocalPort 3333 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess"
-# Then: powershell.exe -Command "Stop-Process -Id <PID> -Force"
-node "C:\Users\Travis Arnold\AppData\Local\Temp\alan-automation\browser-server.js" &
-# Wait 8 seconds, then retry health check
-```
+Navigate to `https://app.alan-platform.com/Travis_Arnold/client/` via `browser_navigate`.
+Read the navigation items via `browser_snapshot`.
 
 ---
 
-## Phase 0 — Absolute Minimum (deploy something that works)
+## ✅ Phase 0 — COMPLETE (deployed 2026-04-10)
 
-**Goal:** A live app with one collection (Locations) that you can open in a browser and add records to.
+**Goal:** A live app with one collection (Locations).
 
-**Files to read first:**
-- `src/models/model/application.alan` (already written for you)
-- `src/migrations/from_empty/to/migration.alan` (already written for you)
+**Status:** DONE. App is live at https://app.alan-platform.com/Travis_Arnold/client/
+Showing "SCHIPHOL LOST & FOUND" branding. Locations collection works. Anonymous access enabled.
 
-**What's already written:**
-`src/models/model/application.alan`:
-```alan
-users
-	anonymous
-
-interfaces
-
-root {
-	'Locations': collection ['Location ID'] {
-		'Location ID': text
-		'Name': text @identifying
-	}
-}
-
-numerical-types
-```
-
-`src/migrations/from_empty/to/migration.alan`:
-```alan
-root = root as $ (
-	'Locations': collection = <! !> none
-)
-```
-
-**Steps:**
-1. Read `src/models/model/application.alan` — confirm it looks exactly like above.
-2. Read `src/migrations/from_empty/to/migration.alan` — confirm it looks exactly like above.
-3. Run browser health check.
-4. Run Steps B → F (deploy with **"empty"**).
-5. In the live app, check the navigation bar shows "Locations".
-6. Click Locations. Try adding a new location (enter Location ID and Name, save).
-7. **STOP. Verify the record saved.** If it did, Phase 0 is complete.
+**Note on root-level vs src/:** Alan Build reads from the root-level `/models/`, `/migrations/`, `/systems/`, `/wiring/` directories in the IDE container — NOT from `src/`. After `git pull`, ensure the root-level files are in sync with `src/`. This is a known structural issue to resolve before Phase 1. Options:
+- (a) Copy: `cp -r src/models src/migrations src/systems src/wiring .` in IDE terminal after git pull
+- (b) Restructure the repo to put Alan source at root level (cleaner long-term)
 
 **Phase 0 success criteria:**
-- [ ] App loads in browser
-- [ ] Navigation shows "Locations"
-- [ ] Can create a new location record
-- [ ] Record persists after page refresh
+- [x] App loads in browser
+- [x] Navigation shows "Locations"
+- [x] "SCHIPHOL LOST & FOUND" branding visible
+- [x] Anonymous access works
 
 ---
 

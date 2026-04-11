@@ -54,32 +54,36 @@ alan-project/
 
 ## Current State (April 2026)
 
-**FRESH START — Phase 0.** Previous agent left broken code. Application has been reset to minimal working state.
+**Phase 0 COMPLETE — App is LIVE.** https://app.alan-platform.com/Travis_Arnold/client/
 
-**What's deployed (or will be on next deploy):** A minimal app with just a `Locations` collection. Application builds correctly. Ready to deploy Phase 0.
+**What's deployed:** Minimal app with `Locations` collection. Deployed with "empty" (fresh data). App loads and shows navigation. Next: Phase 1 — add fields to Locations.
 
-**What was wrong with the previous code:**
-- `application.alan` was missing `interfaces`, `root {}` wrapper, `numerical-types`
-- `users` block was at the bottom of the file (must be at top)
-- Used `boolean` type (doesn't exist in Alan — use stategroup Yes/No)
-- Used wrong reference syntax `.'Collection'* .'Key'` instead of `.'Collection'[]`
-- Used wrong settings file format
+**Critical structural note:**
+- Alan Build reads source from the **root-level** `/models/`, `/migrations/`, `/systems/`, `/wiring/` directories in the IDE container
+- The `src/` folder in the GitHub repo is tracked code, but Alan tool reads from root-level dirs
+- To update what gets built: edit files in `src/`, push to GitHub, pull in IDE, then ALSO copy to root-level OR ensure root-level and src/ are in sync
+- `versions.json` must live at the **project root** (not inside `src/`) — required by Alan extension to find the project
 
-**Use BUILD_PLAN_V2.md** — not BUILD_PLAN.md. V2 is the authoritative plan.
-
-**Next step: Phase 0 — Deploy and verify the minimal app works**
+**Use BUILD_PLAN.md** — this is the authoritative plan (replaces old BUILD_PLAN_V2.md which has been renamed).
 
 ---
 
 ## How to Start a Session
 
 1. Read this CONTEXT.md
-2. Read `BUILD_PLAN_V2.md` — this is the authoritative step-by-step plan (replaces old BUILD_PLAN.md)
-3. Read `_ref/workflow.md` — CRITICAL for Chrome automation and deploy loop
+2. Read `BUILD_PLAN.md` — this is the authoritative step-by-step plan
+3. Read `_ref/workflow.md` — CRITICAL for IDE interaction and deploy loop
 4. Read `_ref/application-language.md` — Alan syntax reference
 5. Read `src/models/model/application.alan` — current data model
-6. Run browser health check (Step C in BUILD_PLAN_V2.md) BEFORE anything else
+6. Open the IDE in browser and verify app is at expected phase before building
 7. Build one phase at a time — never skip ahead
+
+**MANDATORY — Playwright terminal interaction:** Use `browser_run_code` with `page.keyboard.type()` to type into the xterm terminal. `document.execCommand('insertText')` does NOT work with xterm.js. Pattern:
+```javascript
+await page.evaluate(() => { const xterms = document.querySelectorAll('.xterm-helper-textarea'); xterms[xterms.length-1].focus(); });
+await page.keyboard.type('your command here');
+await page.keyboard.press('Enter');
+```
 
 ---
 
@@ -171,4 +175,4 @@ If `_ref/` doesn't cover something, go online in this order:
 
 ---
 
-*Last updated: 2026-04-10 — full reset, fresh start from Phase 0, all broken code removed*
+*Last updated: 2026-04-10 — Phase 0 deployed and live, versions.json committed, docs cleaned up*

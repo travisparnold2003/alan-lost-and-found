@@ -1,4 +1,4 @@
-# Alan Project — Workflow & Chrome Automation
+# Alan Project — Workflow & Playwright MCP Guide
 
 **Load this at the start of every session.**
 
@@ -9,239 +9,112 @@
 ```
 Edit src/ locally
   → git commit + git push
-    → IDE: git pull
-      → Alan Build (check for errors)
-        → Alan Deploy (choose migrate or empty)
-          → verify live app
+    → IDE: git pull (via Playwright)
+      → Alan Fetch (first time per session)
+        → Alan Build (check for " 0  0")
+          → Alan Deploy (choose migrate or empty)
+            → verify live app
 ```
-
-All steps after "git push" happen via the **persistent browser server**.
 
 ---
 
-## Persistent Browser Server
+## Playwright MCP — How to Use
 
-A Node.js HTTP server that keeps Chrome open and accepts commands.
+The IDE is controlled via the **Playwright MCP** tools. No curl commands, no browser-server.js.
 
-**Location:** `C:\Users\Travis Arnold\AppData\Local\Temp\alan-automation\browser-server.js`
+| Task | Tool | Notes |
+|------|------|-------|
+| Navigate to a URL | `browser_navigate` | |
+| Click a button | `browser_click` | Use accessibility snapshot to find refs |
+| Read page text | `browser_snapshot` | Returns accessibility tree — use this instead of screenshots |
+| Type in a field | `browser_type` | Works for normal inputs |
+| Type in xterm terminal | `browser_run_code` | **Special — see section below** |
+| Take screenshot | `browser_take_screenshot` | Only when debugging visual issues |
 
-### Start-of-Session Procedure (ALWAYS follow this)
+### CRITICAL: xterm.js Terminal Interaction
 
-The browser server from a PREVIOUS session may still be holding port 3333 with a dead browser page. Do NOT trust a URL response — always validate the page is alive.
+`browser_type` does NOT work in the xterm.js terminal. Only `browser_run_code` with `page.keyboard.type()` works because xterm listens to `keydown` events, not `input` events.
 
-**Step 1 — Health check (try a goto, not just url):**
-```bash
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"goto","url":"https://app.alan-platform.com/Travis_Arnold/client/"}'
+**Always use this pattern for terminal commands:**
+```javascript
+// In browser_run_code:
+await page.evaluate(() => {
+  const xterms = document.querySelectorAll('.xterm-helper-textarea');
+  xterms[xterms.length - 1].focus();
+});
+await page.keyboard.type('your command here');
+await page.keyboard.press('Enter');
+await page.waitForTimeout(5000); // wait for command to complete
 ```
 
-- If you get `{"url":...}` back → browser is alive, proceed.
-- If you get `{"error":"page.goto: Target page...closed"}` OR connection refused → browser is dead, go to Step 2.
+### Alan Extension Activation
 
-**Step 2 — Kill the old server process (use PowerShell, not pkill):**
-
-`pkill` does NOT kill Windows node processes. Use PowerShell:
-```bash
-powershell.exe -Command "Get-NetTCPConnection -LocalPort 3333 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess"
-# Then kill it:
-powershell.exe -Command "Stop-Process -Id <PID> -Force"
-sleep 2
-```
-
-**Step 3 — Start a fresh server:**
-```bash
-node "C:\Users\Travis Arnold\AppData\Local\Temp\alan-automation\browser-server.js" &
-sleep 8
-# Verify it's up and browser is alive:
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"goto","url":"https://app.alan-platform.com/Travis_Arnold/client/"}'
-```
-
-**NEVER restart the browser server mid-session** — you'll lose the login session and need to re-authenticate.
+After any window reload, the Alan Fetch/Build/Deploy buttons only appear if an `.alan` file is open. Always open `application.alan` via Ctrl+P before attempting any Alan commands.
 
 ---
 
-## Browser Server API
+## Start-of-Session Procedure
 
-All commands: `POST http://localhost:3333/cmd` with JSON body `{"action": "...", ...params}`
-
-| Action | Params | Returns | Use for |
-|--------|--------|---------|---------|
-| `url` | — | `{url}` | check current page |
-| `goto` | `url` | `{url, title}` | navigate |
-| `click` | `selector` | `{ok}` | click element |
-| `clickText` | `selector, text` | `{ok}` | click element containing text |
-| `fill` | `selector, value` | `{ok}` | fill input |
-| `type` | `text` | `{ok}` | type text (keyboard) |
-| `press` | `key` | `{ok}` | press key (e.g. "Enter") |
-| `wait` | `ms` | `{ok}` | wait N milliseconds |
-| `waitFor` | `selector` | `{ok}` | wait for element |
-| `getText` | `selector` | `{texts:[]}` | read text from elements |
-| `eval` | `script` | `{result}` | run JS in page |
-| `screenshot` | `path` | `{path}` | take screenshot (use sparingly!) |
-
-### Important selectors
-
-| What | Selector |
-|------|----------|
-| Error count in status bar | `.statusbar-item[id*="problems"]` |
-| Status bar buttons | `.statusbar-item` (filter by text) |
-| Alan Build button | `clickText(".statusbar-item", "Alan Build")` |
-| Alan Deploy button | `clickText(".statusbar-item", "Alan Deploy")` |
-| Alan Show button | `clickText(".statusbar-item", "Alan Show")` |
-| Deploy dialog options | `.monaco-list-row` |
-| Output panel text | `[id="workbench.panel.output"] .view-lines` |
-| IDE terminal | `.terminal.xterm.focus` |
-| Navigation items in app | `div.navigation-item >> text=Airlines` |
+1. Navigate to IDE: `https://coder.alan-platform.com/Travis_Arnold/?folder=/home/coder/project`
+2. Log in with password `travis2003` if prompted
+3. Open `application.alan` (Ctrl+P → type `application.alan` → Enter) — activates Alan extension
+4. Verify Alan Fetch/Build/Deploy buttons appear in the status bar
+5. If any reload happened, re-open `application.alan` before proceeding
 
 ---
 
-## Token-Efficient Deploy Loop
+## Full Deploy Loop (use every time)
 
-**RULE: Use text-based checks, not screenshots. Screenshots only when debugging a visual problem.**
-
-### Step 1 — Edit files locally
+### Step A — Edit files locally
 Edit in `src/` using the Read/Edit tools. No browser needed.
 
-### Step 2 — Commit and push
+### Step B — Commit and push
 ```bash
 cd "c:/Users/Travis Arnold/Documents/Claude/Projects/alan-project/src"
-git add -A && git commit -m "description" && git push
+git add -A && git commit -m "Phase X: description" && git push
 ```
 
-### Step 3 — IDE: git pull
-```bash
-# Open terminal in IDE (Ctrl+Backtick) then:
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"goto","url":"https://coder.alan-platform.com/Travis_Arnold/?folder=/home/coder/project"}'
+### Step C — Alan Fetch (first time per session only)
+- Needed to download the `alan` binary the first time
+- Click Alan Fetch in the status bar via `browser_click`
+- Wait ~10 seconds
 
-# Type in terminal:
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"click","selector":".terminal.xterm.focus"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"type","text":"git pull\n"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":5000}'
+### Step D — Git pull in IDE terminal
+```javascript
+// browser_run_code:
+await page.evaluate(() => {
+  const xterms = document.querySelectorAll('.xterm-helper-textarea');
+  xterms[xterms.length - 1].focus();
+});
+await page.keyboard.type('git pull');
+await page.keyboard.press('Enter');
+await page.waitForTimeout(6000);
 ```
 
-### Step 4 — Alan Build (TEXT check, no screenshot)
-```bash
-# Click Alan Build
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"clickText","selector":".statusbar-item","text":"Alan Build"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":15000}'
-
-# Check error count — should return {"texts":[" 0  0"]}
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"getText","selector":".statusbar-item[id*=\"problems\"]"}'
+If `git pull` fails due to local modifications:
+```javascript
+await page.keyboard.type('git fetch origin && git reset --hard origin/main');
+await page.keyboard.press('Enter');
+await page.waitForTimeout(8000);
 ```
 
-If errors: read the output panel TEXT (not screenshot):
-```bash
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"getText","selector":"[id=\"workbench.panel.output\"] .view-lines"}'
-```
+### Step E — Alan Build
+- Click Alan Build button in status bar
+- Wait ~15 seconds
+- Check status bar shows `" 0  0"` — read via `browser_snapshot`
+- **Never deploy with errors**
 
-### Step 5 — Alan Deploy
-```bash
-# Click Alan Deploy
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"clickText","selector":".statusbar-item","text":"Alan Deploy"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":2000}'
+If you see errors, read the output panel via `browser_snapshot`.
 
-# Read available options (text, no screenshot)
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"getText","selector":".monaco-list-row"}'
+### Step F — Alan Deploy
+- Click Alan Deploy in status bar
+- A dropdown appears — choose "migrate" or "empty" (see table below)
+- Wait ~35 seconds for deploy to complete
+- Check output panel for "Done"
 
-# Click the right option (migrate = preserve data, empty = wipe and reseed)
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"clickText","selector":".monaco-list-row","text":"migrate"}'
-
-# Wait for deploy (~30-40 seconds)
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":35000}'
-
-# Check output for "Done"
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"getText","selector":"[id=\"workbench.panel.output\"] .view-lines"}'
-```
-
-### Step 6 — Verify App (text check)
-```bash
-# Navigate directly to the app (don't click Alan Show — it triggers a popup dialog)
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"goto","url":"https://app.alan-platform.com/Travis_Arnold/client/"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":3000}'
-
-# Read nav items to confirm model loaded correctly
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"getText","selector":".navigation-item"}'
-
-# Click a collection to check data
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"click","selector":"div.navigation-item >> text=Airlines"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":1500}'
-
-# Check if data is there (read the table text)
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"getText","selector":".content"}'
-```
-
----
-
-## When to Screenshot
-
-Only take a screenshot when:
-- You're getting an error you can't diagnose from text
-- You need to see a UI element you can't find by selector
-- You want to show Travis a visual confirmation
-
-```bash
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"screenshot","path":"C:/Users/Travis Arnold/AppData/Local/Temp/alan-automation/screen.png"}'
-```
-Then read it with the Read tool.
-
----
-
-## Alan Show vs Direct Navigation
-
-**Problem:** `Alan Show` opens a VS Code dialog "Do you want code-server to open external website?" — you can't click the button via Playwright (strict mode issues).
-
-**Solution:** Skip `Alan Show` entirely. Navigate directly to the app URL:
-```
-https://app.alan-platform.com/Travis_Arnold/client/
-```
-
----
-
-## Login (if session expired)
-
-If the IDE shows a login page:
-```bash
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"fill","selector":"input[type=\"password\"]","value":"travis2003"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"click","selector":"input[type=\"submit\"]"}'
-curl -s -X POST http://localhost:3333/cmd -H "Content-Type: application/json" \
-  -d '{"action":"wait","ms":3000}'
-```
-
----
-
-## Git Status in IDE
-
-If `git pull` fails due to local modifications (IDE made changes):
-```bash
-# In the IDE terminal:
-git fetch origin && git reset --hard origin/main
-```
-
-This discards any IDE-side modifications and syncs to the remote. Safe because all real changes are committed from the LOCAL `src/` folder.
+### Step G — Verify live app
+Navigate to `https://app.alan-platform.com/Travis_Arnold/client/`
+Read the navigation items via `browser_snapshot`.
 
 ---
 
@@ -250,22 +123,57 @@ This discards any IDE-side modifications and syncs to the remote. Safe because a
 | Situation | Use |
 |-----------|-----|
 | Very first deploy ever | `empty` |
-| Re-deploy after wiping all data (fresh start) | `empty` |
-| Deploy after changing the model (normal workflow) | `migrate` |
-| Deploy after Phase 1 seed data didn't load | `empty` (one more time) |
+| Re-deploy after full data wipe (fresh start) | `empty` |
+| Any normal model change after Phase 0 | `migrate` |
+| Something went badly wrong, starting over | `empty` (wipes ALL data) |
 
-**WARNING: "empty" deletes ALL user-entered data. After Phase 1, always use "migrate" unless deliberately resetting.**
-
----
-
-## Phase 2 Deploy Notes
-
-Phase 2 adds Users/Passwords. The from_release migration will need to:
-1. Map all existing Phase 1 collections (pass-through)
-2. Add empty `'Users'`, `'Passwords'`, `'Access Types'` collections
-
-The from_release/from/application.alan must be updated using "Alan: Generate Migration" in the Command Palette after switching to "from_release" as the source.
+**WARNING: "empty" deletes ALL user-entered data. After Phase 0, always use "migrate" unless deliberately resetting.**
 
 ---
 
-*Last updated: 2026-04-08*
+## Reading File Contents via IDE
+
+xterm.js renders on canvas — terminal output can't be read via DOM. To verify file contents after editing in the terminal:
+
+1. Open file in editor: Ctrl+P → filename → Enter
+2. Read `.view-line` elements via `browser_snapshot` or `browser_evaluate`:
+   ```javascript
+   // browser_run_code:
+   const lines = await page.$$eval('.view-line', els => els.map(e => e.textContent));
+   return lines.join('\n');
+   ```
+
+---
+
+## Alan Show vs Direct Navigation
+
+**Problem:** `Alan Show` opens a VS Code dialog "Do you want code-server to open external website?" — clicking it via Playwright is unreliable.
+
+**Solution:** Skip `Alan Show`. Navigate directly:
+```
+https://app.alan-platform.com/Travis_Arnold/client/
+```
+
+---
+
+## versions.json
+
+Must exist at project root (`/home/coder/project/versions.json`) for Alan extension to find the project. Now committed to GitHub — will be present after `git pull`.
+
+Format:
+```json
+{"platform version": "2024.2", "system types": {"auto-webclient": {"version": "yar.15"}, "datastore": {"version": "116"}, "session-manager": {"version": "31"}}}
+```
+
+---
+
+## Token-Efficient Approach
+
+- Use `browser_snapshot` (accessibility tree) instead of screenshots
+- Only screenshot when debugging a visual problem
+- Read file content via editor view-lines, not terminal output
+- Verify state in the live app — don't trust self-reports
+
+---
+
+*Last updated: 2026-04-10 — Rewritten to use Playwright MCP. Old browser-server.js approach removed.*
