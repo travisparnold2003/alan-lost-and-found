@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+cmd="${1:-}"
+shift || true
+
+case "$cmd" in
+  fetch)
+    exec "$(dirname "$0")/src/.alan/alan-tools/fetch.exe" "$@"
+    ;;
+  build)
+    exec "$(dirname "$0")/src/.alan/devenv/platform/project-build-environment/tools/build-system.exe" "$@"
+    ;;
+  deploy)
+    exec "$(dirname "$0")/src/.alan/devenv/platform/project-build-environment/tools/deploy-system.exe" "$@"
+    ;;
+  *)
+    echo "Usage: alan {fetch|build|deploy} [args...]" >&2
+    exit 1
+    ;;
+esac

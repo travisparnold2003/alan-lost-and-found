@@ -1,15 +1,5 @@
 users
 	anonymous
-	dynamic: .'Users'
-		passwords: .'Passwords'
-			password-value: .'Data'.'Password'
-			password-status: .'Data'.'Active' (
-				| active => 'Yes' ( )
-				| reset => 'No' ( )
-			)
-		password-initializer: (
-			'Data' = ( )
-		)
 
 interfaces
 
@@ -42,7 +32,7 @@ root {
 	'Staff': collection ['Staff ID'] {
 		'Staff ID': text
 		'Full Name': text @identifying
-		'Email': text @validate: "[^@\\s]+@[^@\\s]+\\.[^@\\s]+"
+		'Email': text
 		'Phone': text
 		'Role': stategroup (
 			'Admin' { }
@@ -53,37 +43,6 @@ root {
 			'Yes' { }
 			'No' { }
 		)
-		'Logged Item Refs': reference-set -> downstream ^ .'Found Items'* .'Logged By' = inverse >'Logged By'
-		'Items Logged Count': number 'units' = count <'Logged Item Refs'*
-		'Proposed Match Refs': reference-set -> downstream ^ .'Matches'* .'Proposed By' = inverse >'Proposed By'
-		'Matches Proposed Count': number 'units' = count <'Proposed Match Refs'*
-	}
-
-	'Users': collection ['User'] {
-		'User': text
-		'Full Name': text @identifying
-		'Email': text @validate: "[^@\\s]+@[^@\\s]+\\.[^@\\s]+"
-		'Role': stategroup (
-			'Admin' { }
-			'Supervisor' { }
-			'Desk Agent' { }
-		)
-		'Active': stategroup (
-			'Yes' { }
-			'No' { }
-		)
-		'Staff Member': text -> ^ .'Staff'[]
-	}
-
-	'Passwords': collection ['User'] {
-		'User': text -> ^ .'Users'[]
-		'Data': group {
-			'Password': text
-			'Active': stategroup (
-				'Yes' { }
-				'No' { }
-			)
-		}
 	}
 
 	'Found Items': collection ['Item ID'] {
@@ -107,16 +66,6 @@ root {
 			'Donated' { }
 			'Disposed' { }
 		)
-		'Is Active': stategroup (
-			'Yes' { }
-			'No' { }
-		) = switch .'Status' (
-			| 'Logged' => 'Yes' ( )
-			| 'Matched' => 'Yes' ( )
-			| 'Returned' => 'No' ( )
-			| 'Donated' => 'No' ( )
-			| 'Disposed' => 'No' ( )
-		)
 	}
 
 	'Loss Reports': collection ['Report ID'] {
@@ -132,7 +81,7 @@ root {
 		'Airline': text
 		'Contact': group {
 			'Name': text
-			'Email': text @validate: "[^@\\s]+@[^@\\s]+\\.[^@\\s]+"
+			'Email': text
 			'Phone': text
 			'Language': stategroup (
 				'English' { }
@@ -146,27 +95,6 @@ root {
 			'Matched' { }
 			'Resolved' { }
 			'Closed' { }
-		)
-		'Priority': stategroup (
-			'Low' { }
-			'Standard' { }
-			'High' { }
-			'Critical' { }
-		) = switch >'Category'.'Priority' (
-			| 'Low' => 'Low' ( )
-			| 'Standard' => 'Standard' ( )
-			| 'High' => 'High' ( )
-			| 'Critical' => 'Critical' ( )
-		)
-		'Is Open': stategroup (
-			'Yes' { }
-			'No' { }
-		) = switch .'Status' (
-			| 'Open' => 'Yes' ( )
-			| 'In Progress' => 'Yes' ( )
-			| 'Matched' => 'No' ( )
-			| 'Resolved' => 'No' ( )
-			| 'Closed' => 'No' ( )
 		)
 	}
 
@@ -182,9 +110,6 @@ root {
 			'Confirmed' {
 				'Confirmed By': text -> ^ ^ .'Staff'[]
 				'Date Confirmed': number 'date'
-				'ID Doc Type': text
-				'ID Doc Number': text
-				'Signature': text
 			}
 			'Rejected' {
 				'Rejected By': text -> ^ ^ .'Staff'[]
@@ -193,21 +118,8 @@ root {
 			}
 		)
 	}
-
-	'Dashboard': group @breakout {
-		'Logged Item Count': number 'units' = count .'Found Items'*
-		'Lost Item Count': number 'units' = count .'Loss Reports'*
-		'Match Proposed Count': number 'units' = count .'Matches'* .'Status'?'Proposed'
-		'Match Confirmed Count': number 'units' = count .'Matches'* .'Status'?'Confirmed'
-		'Match Rejected Count': number 'units' = count .'Matches'* .'Status'?'Rejected'
-		'Returned Item Count': number 'units' = count .'Found Items'* .'Status'?'Returned'
-		'Open Loss Reports': number 'units' = count .'Loss Reports'* .'Is Open'?'Yes'
-		'Active Found Items': number 'units' = count .'Found Items'* .'Is Active'?'Yes'
-	}
 }
 
 numerical-types
-	'units'
 	'days'
 	'date' @date: date
-	'minutes' @duration: minutes
