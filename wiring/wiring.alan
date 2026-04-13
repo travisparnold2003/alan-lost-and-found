@@ -1,9 +1,9 @@
-interfaces { }
+interfaces
 
 models
 	'model': @'"models/model"'
 
-external systems { }
+external-systems
 
 systems
 	'server': @'"systems/server"'
@@ -19,7 +19,6 @@ systems
 			'model': @'model'
 		)
 
-provided connections {
+provided-connections
 	'auth': @'sessions'/'http'
 	'client': @'client'/'http'
-}
