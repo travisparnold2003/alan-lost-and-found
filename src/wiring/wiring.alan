@@ -1,12 +1,30 @@
-interfaces { }
+interfaces
 
 models
-	'model': @'"models/model"'
+	'model'
+
+external-systems
 
 systems
-	'server': @'"systems/server"'
-	'client': @'"systems/client"'
-	'sessions': @'"systems/sessions"'
+	'server': 'datastore'
+		project / (
+			'interfaces' / (
+				'providing' / ( )
+				'consuming' / ( )
+			)
+			'model' = provide 'model'
+		)
 
-provided connections {
-}
+	'sessions': 'session-manager'
+		project / (
+			'model' = bind 'server'::'authenticate'
+		)
+
+	'client': 'auto-webclient'
+		project / (
+			'model' = consume 'server'/'model'
+		)
+
+provided-connections
+	'auth' = 'sessions'::'http'
+	'client' = 'client'::'http'
