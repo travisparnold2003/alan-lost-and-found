@@ -1,5 +1,14 @@
 users
-	anonymous
+	dynamic: .'Users'
+		passwords: .'Passwords'
+			password-value: .'Data'.'Password'
+			password-status: .'Data'.'Active' (
+				| active => 'Yes' ( )
+				| reset => 'No' ( )
+			)
+			password-initializer: (
+				'Data' = ( )
+			)
 
 interfaces
 
@@ -29,11 +38,10 @@ root {
 		)
 	}
 
-	'Staff': collection ['Staff ID'] {
-		'Staff ID': text
+	'Users': collection ['User'] {
+		'User': text
 		'Full Name': text @identifying
-		'Email': text
-		'Phone': text
+		'Email': text @validate: "[^@\\s]+@[^@\\s]+\\.[^@\\s]+"
 		'Role': stategroup (
 			'Admin' { }
 			'Supervisor' { }
@@ -43,6 +51,17 @@ root {
 			'Yes' { }
 			'No' { }
 		)
+	}
+
+	'Passwords': collection ['User'] {
+		'User': text -> ^ .'Users'[]
+		'Data': group {
+			'Password': text
+			'Active': stategroup (
+				'Yes' { }
+				'No' { }
+			)
+		}
 	}
 
 	'Found Items': collection ['Item ID'] {
@@ -56,15 +75,13 @@ root {
 		'Date Found': number 'date'
 		'Date Logged': number 'date'
 		'Finder Name': text
-		'Logged By': text -> ^ .'Staff'[]
+		'Logged By': text -> ^ .'Users'[]
 		'Photo': file
 		'Internal Notes': text
 		'Status': stategroup (
 			'Logged' { }
-			'Matched' { }
+			'Stored' { }
 			'Returned' { }
-			'Donated' { }
-			'Disposed' { }
 		)
 	}
 
@@ -90,10 +107,9 @@ root {
 			)
 		}
 		'Status': stategroup (
-			'Open' { }
-			'In Progress' { }
+			'Filed' { }
 			'Matched' { }
-			'Resolved' { }
+			'Returned' { }
 			'Closed' { }
 		)
 	}
@@ -102,24 +118,36 @@ root {
 		'Match ID': text
 		'Found Item': text -> ^ .'Found Items'[]
 		'Loss Report': text -> ^ .'Loss Reports'[]
-		'Proposed By': text -> ^ .'Staff'[]
+		'Proposed By': text -> ^ .'Users'[]
 		'Date Proposed': number 'date'
 		'Match Notes': text
 		'Status': stategroup (
 			'Proposed' { }
 			'Confirmed' {
-				'Confirmed By': text -> ^ ^ .'Staff'[]
+				'Confirmed By': text -> ^ ^ .'Users'[]
 				'Date Confirmed': number 'date'
 			}
 			'Rejected' {
-				'Rejected By': text -> ^ ^ .'Staff'[]
+				'Rejected By': text -> ^ ^ .'Users'[]
 				'Date Rejected': number 'date'
 				'Rejection Reason': text
 			}
 		)
 	}
+
+	'Dashboard': group @breakout {
+		'Total Found Items': number 'units' = count ^ .'Found Items'*
+		'Total Loss Reports': number 'units' = count ^ .'Loss Reports'*
+		'Open Found Items': number 'units' = count ^ .'Found Items'* .'Status'?'Logged'
+		'Open Loss Reports': number 'units' = count ^ .'Loss Reports'* .'Status'?'Filed'
+	}
 }
 
 numerical-types
+	'units'
 	'days'
-	'date'
+	'date' in 'days'
+		= 'date-time' + -43200 * 10 ^ 0 in 'seconds'
+		@date
+	'date-time': time-in-seconds in 'seconds' @date-time
+	'seconds' @duration: seconds
