@@ -9,6 +9,4 @@ systems
 	'sessions': @'"systems/sessions"'
 
 provided connections {
-	'auth': @'sessions'::'http'
-	'client': @'client'::'http'
 }
