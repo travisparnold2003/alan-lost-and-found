@@ -1,6 +1,6 @@
 application creator: "Travis Arnold"
 application name: "Schiphol Lost & Found"
-allow anonymous user: enabled
+allow anonymous user: disabled
 enable csv actions: enabled
 report limit: 10000
 announcement: "" [ ]
