@@ -1,3 +1,3 @@
-password-authentication: enabled
+password-authentication: disabled
 user-creation: disabled
 user-linking: disabled
