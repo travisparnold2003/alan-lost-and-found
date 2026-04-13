@@ -1,24 +1,30 @@
 interfaces
 
 models
-	'model': @'"models/model"'
+	'model'
 
 external-systems
 
 systems
-	'server': @'"systems/server"'
-		mapping (
-			'model': @'model'
+	'server': 'datastore'
+		project / (
+			'interfaces' / (
+				'providing' / ( )
+				'consuming' / ( )
+			)
+			'model' = provide 'model'
 		)
-	'sessions': @'"systems/sessions"'
-		mapping (
-			'model': @'model'
+
+	'sessions': 'session-manager'
+		project / (
+			'model' = bind 'server'::'authenticate'
 		)
-	'client': @'"systems/client"'
-		mapping (
-			'model': @'model'
+
+	'client': 'auto-webclient'
+		project / (
+			'model' = consume 'server'/'model'
 		)
 
 provided-connections
-	'auth': @'sessions'/'http'
-	'client': @'client'/'http'
+	'auth' = 'sessions'::'http'
+	'client' = 'client'::'http'
