@@ -122,4 +122,4 @@ root {
 
 numerical-types
 	'days'
-	'date' @date: date
+	'date'
