@@ -1,2 +1,51 @@
 root = root as $ (
+	'Locations': collection = <! !> (
+		= (
+			'Location ID': text = "LOC001"
+			'Name': text = "Departure Hall Terminal 2"
+			'Terminal': stategroup = 'Terminal 2' ( )
+			'Zone': text = "Departures"
+			'Description': text = "Main departure area near check-in"
+		)
+		= (
+			'Location ID': text = "LOC002"
+			'Name': text = "Baggage Claim Terminal 1"
+			'Terminal': stategroup = 'Terminal 1' ( )
+			'Zone': text = "Arrivals"
+			'Description': text = "Carousel area, belt 5-12"
+		)
+		= (
+			'Location ID': text = "LOC003"
+			'Name': text = "Schiphol Plaza"
+			'Terminal': stategroup = 'Schiphol Plaza' ( )
+			'Zone': text = "Central"
+			'Description': text = "Central hub between terminals"
+		)
+	)
+	'Item Categories': collection = <! !> (
+		= (
+			'Category ID': text = "CAT001"
+			'Name': text = "Travel Documents"
+			'Retention Days': number = 365
+			'Priority': stategroup = 'Critical' ( )
+		)
+		= (
+			'Category ID': text = "CAT002"
+			'Name': text = "Electronics"
+			'Retention Days': number = 90
+			'Priority': stategroup = 'High' ( )
+		)
+		= (
+			'Category ID': text = "CAT003"
+			'Name': text = "Clothing & Bags"
+			'Retention Days': number = 60
+			'Priority': stategroup = 'Standard' ( )
+		)
+		= (
+			'Category ID': text = "CAT004"
+			'Name': text = "Jewellery & Valuables"
+			'Retention Days': number = 180
+			'Priority': stategroup = 'High' ( )
+		)
+	)
 )
