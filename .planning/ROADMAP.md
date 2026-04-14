@@ -46,7 +46,9 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Item Categories collection is visible with Retention Days (number 'days') and Priority stategroup (Critical/High/Standard/Low)
   3. from_empty migration runs without errors and the IDE shows a successful deploy
   4. Both collections can be navigated and records can be created/edited in the live app
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 02-01-PLAN.md — Add Locations + Item Categories collections, seed migration, deploy and verify
 
 ### Phase 3: Auth + Staff
 **Goal**: Staff can log in with a password, anonymous access is enabled for passengers, and the Staff collection is fully defined
@@ -149,12 +151,12 @@ Decimal phases appear between their surrounding integers in numeric order.
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/? | Not started | - |
-| 2. Reference Tables | 0/? | Not started | - |
+| 2. Reference Tables | 0/1 | Planned | - |
 | 3. Auth + Staff | 0/? | Not started | - |
 | 4. Loss Reports | 0/? | Not started | - |
 | 5. Found Items | 0/? | Not started | - |
