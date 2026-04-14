@@ -4,6 +4,33 @@ users
 interfaces
 
 root {
+	'Locations': collection ['Location ID'] {
+		'Location ID': text
+		'Name': text @identifying
+		'Terminal': stategroup (
+			'Terminal 1' { }
+			'Terminal 2' { }
+			'Terminal 3' { }
+			'Pier' { }
+			'Schiphol Plaza' { }
+			'Train Station' { }
+			'Other' { }
+		)
+		'Zone': text
+		'Description': text
+	}
+
+	'Item Categories': collection ['Category ID'] {
+		'Category ID': text
+		'Name': text @identifying
+		'Retention Days': number 'days'
+		'Priority': stategroup (
+			'Critical' { }
+			'High' { }
+			'Standard' { }
+			'Low' { }
+		)
+	}
 }
 
 numerical-types
