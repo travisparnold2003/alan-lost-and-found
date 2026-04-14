@@ -1,4 +1,0 @@
-root = root as $ (
-	'Locations': collection = <! !> ( )
-	'Item Categories': collection = <! !> ( )
-)
